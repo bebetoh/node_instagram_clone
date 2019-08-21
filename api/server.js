@@ -1,14 +1,17 @@
 var express = require('express');
 var bodyParser = require('body-parser');
+var multiparty = require('connect-multiparty');
 var mongodb = require('mongodb');
 
 var objectID = require('mongodb').ObjectId;
 
+var fs = require('fs'); //modulo nativo para ligar com o file system
 
 var app = express();
 
 app.use(bodyParser.urlencoded({extended: true}));//aceita parametros no formato de form
 app.use(bodyParser.json()); // aceita parametros no formato json;
+app.use(multiparty());//interpreta formularios multipart form data
 
 var port = 8080;
 
@@ -28,22 +31,46 @@ app.get('/', function(req, res){
 
 //POST - cria o registro no mongodb
 app.post('/api', function(req, res) {
-    
+
+    res.setHeader("Access-Control-Allow-Origin", "*");
+
     var dados = req.body; 
     
-    db.open(function (err, mongoClient) {
-        mongoClient.collection('postagens', function(err, collection) {
-            collection.insert(dados, function(err, records){
-                if(err){
-                    res.json(err);
-                }else{
-                    res.json(records);
-                }
-                mongoClient.close();
+    console.log(req.files);
+
+    var time_stamp = new Date().getTime();
+
+    var url_imagem = time_stamp + '_' + req.files.arquivo.originalFilename;
+
+    var path_origem = req.files.arquivo.path;
+    var path_destino = './uploads/' + url_imagem;
+
+   
+
+    fs.rename(path_origem, path_destino, function (err) {
+        if(err){
+            res.status(500).json({error: err});
+            return;
+        }
+
+        var dados = {
+            titulo: req.body.titulo,
+            url_imagem: url_imagem
+        };
+
+        db.open(function (err, mongoClient) {
+            mongoClient.collection('postagens', function(err, collection) {
+                collection.insert(dados, function(err, records){
+                    if(err){
+                        res.json({status: err});
+                    }else{
+                        res.json({status: 'inclusao realizada com sucesso'});
+                    }
+                    mongoClient.close();
+                });
             });
-        })
+        });
     });
-    //res.send(dados);
 });
 
 //GET - lê o registro no mongodb
