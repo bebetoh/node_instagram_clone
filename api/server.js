@@ -75,6 +75,10 @@ app.post('/api', function(req, res) {
 
 //GET - lê o registro no mongodb
 app.get('/api', function(req, res) {
+    //console.log('entrou get');
+    
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    
     db.open(function (err, mongoClient) {
         mongoClient.collection('postagens', function(err, collection) {
             collection.find().toArray(function (err, results) {
@@ -142,4 +146,21 @@ app.delete('/api/:id', function(req, res) {
             );
         });
     });
+});
+
+app.get('/imagens/:imagem', function (req, res) {
+   
+    var img = req.params.imagem;
+
+    //console.log(img);
+
+    fs.readFile('./uploads/'+img, function (err, content) {
+        if(err){
+            res.status(400).json(err);
+            return;
+        }
+        res.writeHead(200, { 'Content-type' : 'image/jpeg' });
+        
+        res.end(content)//pega o binario do arquivo e escreve dentro do response;
+    })
 });
