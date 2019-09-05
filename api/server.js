@@ -13,6 +13,16 @@ app.use(bodyParser.urlencoded({extended: true}));//aceita parametros no formato 
 app.use(bodyParser.json()); // aceita parametros no formato json;
 app.use(multiparty());//interpreta formularios multipart form data
 
+app.use(function (req, res, next) {
+    
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+    res.setHeader("Access-Control-Allow-Headers", "Content-type");// Origem sobrescreve o content-type com o que esta na view do client padrao.ejs do projeto client web_instagram_clone
+    res.setHeader("Access-Control-Allow-Credentials", true);
+
+    next();
+});
+
 var port = 8080;
 
 app.listen(port);
@@ -94,7 +104,7 @@ app.get('/api', function(req, res) {
 });
 
 app.get('/api/:id', function(req, res) {
-  
+    	
     db.open(function (err, mongoClient) {
         mongoClient.collection('postagens', function(err, collection) {
             collection.find(objectID(req.params.id)).toArray(function (err, results) {
@@ -110,8 +120,9 @@ app.get('/api/:id', function(req, res) {
 });
 
 app.put('/api/:id', function(req, res) {
+    res.send('rota para atualizacao ' +req.body.comentario); 
   
-  
+  /*
     db.open(function (err, mongoClient) {
         mongoClient.collection('postagens', function(err, collection) {
             collection.update(
@@ -129,6 +140,7 @@ app.put('/api/:id', function(req, res) {
             );
         });
     });
+    */
 });
 
 app.delete('/api/:id', function(req, res) {
