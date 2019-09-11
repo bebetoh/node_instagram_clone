@@ -120,14 +120,18 @@ app.get('/api/:id', function(req, res) {
 });
 
 app.put('/api/:id', function(req, res) {
-    res.send('rota para atualizacao ' +req.body.comentario); 
-  
-  /*
+    //res.send('rota para atualizacao ' +req.body.comentario); 
     db.open(function (err, mongoClient) {
         mongoClient.collection('postagens', function(err, collection) {
             collection.update(
                 { _id: objectID(req.params.id) },//query de pesquisa
-                { $set: {titulo: req.body.titulo} }, //instrução de atualização
+                { $push: {
+                            comentarios: {
+                                id_comentario: new objectID(),
+                                comentario: req.body.comentario
+                            }
+                    } 
+                }, //instrução de atualização, inclui um objeto em um array ao invés de atualizar apenas um objeto.
                 {}, // multi um ou todos os registros
                 function (err, records) {//ação a ser tomada logo após o callback
                     if(err){
@@ -140,7 +144,6 @@ app.put('/api/:id', function(req, res) {
             );
         });
     });
-    */
 });
 
 app.delete('/api/:id', function(req, res) {
