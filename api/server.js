@@ -148,19 +148,30 @@ app.put('/api/:id', function(req, res) {
 
 app.delete('/api/:id', function(req, res) {
     console.log('entrou no delete');
+    //res.send(req.params.id);
+    
     db.open(function (err, mongoClient) {
         mongoClient.collection('postagens', function(err, collection) {
-            collection.remove( {_id: objectID(req.params.id) },function (err, records) {//ação a ser tomada logo após o callback
-                    if(err){
-                        res.json(err);
-                    }else{
-                        res.status.json(records);
-                    }
+            collection.update( 
+                    { }, //qualquer postagem
+                    {  $pull:   {
+                                    comentarios: { id_comentario:  objectID(req.params.id)}
+                                }
+                    },
+                    {multi: true},
+                    function (err, records) {//ação a ser tomada logo após o callback
+                       // console.log('OPA');
+                        if(err){
+                            res.json(err);
+                        }else{
+                            res.json(records);
+                        }
                     mongoClient.close();
                 }                
             );
         });
     });
+    
 });
 
 app.get('/imagens/:imagem', function (req, res) {
